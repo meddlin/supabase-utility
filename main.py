@@ -1,6 +1,7 @@
 from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
+from rich import print
 
 load_dotenv()
 
@@ -21,7 +22,7 @@ def main():
     response = supabase.table("places").insert(data).execute()
 
     # Check the response
-    print(response)
+    print(f"[bold green]{response}[/bold green]")
 
 if __name__ == "__main__":
     main()
