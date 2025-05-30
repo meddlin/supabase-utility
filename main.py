@@ -40,27 +40,42 @@ def ingest_data(data_list: list):
     # Initialize client
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-    # Insert data into the "users" table
-    # data = {
-    #     "name": "the good place",
-    #     "location": "",
-    #     "google_maps_link": ""
-    # }
-
     for row in data_list:
         response = supabase.table("places").insert({ 
             'name': row[0], 
             'location': '', 
-            'google_maps_link': row[2],
-            'list': row[4]
+            'city': row[1],
+            'state': row[2],
+            'google_maps_link': row[3],
+            'notes': row[4],
+            'list': row[5]
         }).execute()
         # Check the response
         print(f"[bold green]{response}[/bold green]")
 
     # response = supabase.table("places").insert(data).execute()
 
+def select_table(table: str):
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    response = supabase.table("places").select().execute()
+    print(response)
+
+def empty_table(table: str):
+    table_name = "places"
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    try:
+        data, error = supabase.table(table_name).delete().neq("id", "").execute()
+        if error:
+            print(f"Error deleting rows: {error}")
+        else:
+            print(f"All rows deleted successfully from table '{table_name}'.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
 def main():
     parser = argparse.ArgumentParser(description="Python Supabase Loader Utility")
+    parser.add_argument("-s", "--select", type = str, help = "Basic select on a table")
+    parser.add_argument("-d", "--delete", type = str, help = "Delete ALL rows from a table")
     parser.add_argument("-f", "--file", type=str, help = "File to import. MUST BE CSV.")
     parser.add_argument("--header", action = argparse.BooleanOptionalAction, help = "has header")
     args = parser.parse_args()
@@ -76,6 +91,12 @@ def main():
         data = read_csv(file_name)
         print(data)
         sys.exit(0)
+    
+    if args.select:
+        select_table('places')
+    
+    if args.delete:
+        empty_table('places')
 
 if __name__ == "__main__":
     main()
